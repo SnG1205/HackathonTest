@@ -16,12 +16,11 @@ public class HackathonRestController {
     private final JsonConverter jsonConverter = new JsonConverter();
 
     @GetMapping("/test")
-    public String getLawVfgh(/*@RequestParam(value = "Applikation") String someParam*/) throws JsonProcessingException {
-        String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte='Peter+Hauser'&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum";
+    public String getLawVfgh(@RequestParam(value = "Suchworte") String someParam) throws JsonProcessingException {
+        String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + someParam + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum";
         RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
         return returnLink(response);
-        //return returnLink(returnFormattedResponse(response));
     }
 
     @GetMapping("/history")
