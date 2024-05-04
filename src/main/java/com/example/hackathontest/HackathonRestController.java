@@ -42,9 +42,8 @@ public class HackathonRestController {
         return finalResponse.substring(1, finalFinalResponse.length()-1);
     }*/
 
-    private String returnLink(String json){
+    private String returnLink(String json){ //Todo change method to return list of xml links
         String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][0]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
-        //String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['Hits']['#text']";
         DocumentContext jsonContext = JsonPath.parse(json);
         return  jsonContext.read(jsonPath);
     }
