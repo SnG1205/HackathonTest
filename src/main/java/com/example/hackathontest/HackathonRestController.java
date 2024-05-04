@@ -20,9 +20,7 @@ public class HackathonRestController {
         String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte='Peter+Hauser'&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum";
         RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
-        String test = returnLink(response);
-        System.out.println(test);
-        return response;
+        return returnLink(response);
         //return returnLink(returnFormattedResponse(response));
     }
 
