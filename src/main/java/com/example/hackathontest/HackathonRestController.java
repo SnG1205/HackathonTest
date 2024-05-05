@@ -38,6 +38,11 @@ public class HackathonRestController {
         //String some = xmlText(xmlString);
         List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
         List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
+        //int i = listOfSpruchs.get(0).getKopf().indexOf("vertreten durch Dr. Peter Hauser");
+        /*int i = listOfSpruchs.get(0).getKopf().indexOf("vertreten");
+        int i2 = listOfSpruchs.get(0).getKopf().indexOf("klagenden Partei");
+        int i3 = listOfSpruchs.get(0).getKopf().indexOf("klagenden");
+        int i4 = listOfSpruchs.get(0).getKopf().indexOf("beklagte");*/
         //return restTemplate.getForObject(strings.get(0), String.class);
         return jsonConverter.toJson(listOfSpruchs);
     }
@@ -48,13 +53,13 @@ public class HackathonRestController {
         RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
         String finalResponse = jsonConverter.toJson(response);
-
+        StringBuilder stringBuilder = new StringBuilder();
 
         //return returnFormattedResponse(response);
         return response;
     }
 
-    private List<String> returnLink(String json){ //Todo change method to return list of xml links
+    private List<String> returnLink(String json){
         List<String> xmlLinks = new ArrayList<>();
         String amountJsonPath = "$['OgdSearchResult']['OgdDocumentResults']['Hits']['#text']";
         DocumentContext jsonContext = JsonPath.parse(json);
@@ -63,8 +68,14 @@ public class HackathonRestController {
             amountOfResults = resultsLimit;
         }
         for (int i = 0; i < amountOfResults; i++){
-            String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
-            xmlLinks.add(jsonContext.read(jsonPath));
+            try{
+                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference'][0]['Urls']['ContentUrl'][0]['Url']";
+                xmlLinks.add(jsonContext.read(jsonPath));
+            }
+            catch (Exception e){
+                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
+                xmlLinks.add(jsonContext.read(jsonPath));
+            }
         }
         return  xmlLinks;
     }
