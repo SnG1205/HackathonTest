@@ -1,4 +1,4 @@
-package com.example.hackathontest;
+package com.example.hackathontest.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,16 +1,24 @@
 package com.example.hackathontest;
 
+import com.example.hackathontest.data.JustizResponse;
+import com.example.hackathontest.utils.JsonConverter;
+import com.example.hackathontest.utils.XmlParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import org.jdom2.Content;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -21,11 +29,17 @@ public class HackathonRestController {
     private int resultsLimit;
 
     @GetMapping("/test")
-    public List<String> getLawVfgh(@RequestParam(value = "Suchworte") String someParam) throws JsonProcessingException {
+    public String getLawVfgh(@RequestParam(value = "Suchworte") String someParam) throws IOException, ParserConfigurationException, SAXException {
         String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + someParam + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred";
         RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
-        return returnLink(response);
+        List<String> strings = returnLink(response);
+        //String xmlString = restTemplate.getForObject(strings.get(0), String.class);
+        //String some = xmlText(xmlString);
+        List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
+        List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
+        //return restTemplate.getForObject(strings.get(0), String.class);
+        return jsonConverter.toJson(listOfSpruchs);
     }
 
     @GetMapping("/history")
@@ -40,16 +54,8 @@ public class HackathonRestController {
         return response;
     }
 
-    /*private String returnFormattedResponse(String response) throws JsonProcessingException {
-        String convertedResponse = jsonConverter.toJson(response);
-        String finalResponse = convertedResponse.replace("\\", "");
-        String finalFinalResponse = finalResponse.replace("\\\\\\", "\\");
-        return finalResponse.substring(1, finalFinalResponse.length()-1);
-    }*/
-
     private List<String> returnLink(String json){ //Todo change method to return list of xml links
         List<String> xmlLinks = new ArrayList<>();
-        //String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][0]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
         String amountJsonPath = "$['OgdSearchResult']['OgdDocumentResults']['Hits']['#text']";
         DocumentContext jsonContext = JsonPath.parse(json);
         int amountOfResults =  Integer.parseInt(jsonContext.read(amountJsonPath));
@@ -61,5 +67,52 @@ public class HackathonRestController {
             xmlLinks.add(jsonContext.read(jsonPath));
         }
         return  xmlLinks;
+    }
+
+    private JustizResponse xmlText(String xml){
+        String returnKopf = "";
+        String returnSpruch = "";
+        //Jdom
+        try{
+            Document xmlDocJdom = XmlParser.convertStringToXml(xml);
+            Element rootElementJdom = xmlDocJdom.getRootElement();
+            Element contentNutzdatenStream = (Element) rootElementJdom.getContent().stream().filter(content1 -> content1.getCType().equals(Content.CType.Element)).toList().get(1);
+            Element contentAbschnittStream = (Element) contentNutzdatenStream.getContent().stream().filter(content -> content.getCType().equals(Content.CType.Element)).toList().get(0);
+            List<Element> listOfContents = contentAbschnittStream.getContent().stream().map(content -> (Element) content).toList();
+            Element kopf = listOfContents.stream().filter(element -> element.getAttribute("ct") != null && element.getAttribute("ct").getValue().equals("kopf")).toList().get(0);
+            Element spruch = listOfContents.stream().filter(element -> element.getAttribute("ct") != null
+                    && element.getAttribute("ct").getValue().equals("spruch")
+                    && element.getAttribute("typ") != null
+            ).toList().get(0); //Todo change since method now returns only part of the Spruch. Cases where the case "aufgehoben worden ist" are not working properly.
+            if(kopf.getText().isEmpty()){
+                Element inner = (Element) kopf.getContent(0);
+                System.out.println(inner.getText());
+                //return inner.getText();
+                returnKopf = inner.getText();
+            }
+            else if(!kopf.getText().isEmpty()){
+                List<Element> innerContents = kopf.getContent().stream().filter(content -> content.getCType().equals(Content.CType.Element)).map(content -> (Element) content).toList();
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append(kopf.getText());
+                innerContents.forEach(element -> stringBuilder.append(element.getText()));
+                //return stringBuilder.toString();
+                returnKopf = stringBuilder.toString();
+                //Todo investigate case 29 since it has no "Kopf" and returns undesired String
+            }
+            if(spruch.getText().isEmpty()){
+                String output = spruch.getContent(0).getValue();
+                System.out.println(output);
+                //return output;
+                returnSpruch = output;
+            }
+            else{
+                returnSpruch = spruch.getText();
+            }
+            return new JustizResponse(returnKopf, returnSpruch);
+        }
+        catch (Exception e){
+            System.out.println("Error");
+            return (JustizResponse) List.of();
+        }
     }
 }
