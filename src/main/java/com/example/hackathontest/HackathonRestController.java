@@ -1,5 +1,6 @@
 package com.example.hackathontest;
 
+import com.example.hackathontest.data.Attorney;
 import com.example.hackathontest.data.JustizResponse;
 import com.example.hackathontest.utils.JsonConverter;
 import com.example.hackathontest.utils.XmlParser;
@@ -20,6 +21,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class HackathonRestController {
@@ -28,22 +30,25 @@ public class HackathonRestController {
     @Value("${results.limit}")
     private int resultsLimit;
 
-    @GetMapping("/test")
-    public String getLawVfgh(@RequestParam(value = "Suchworte") String someParam) throws IOException, ParserConfigurationException, SAXException {
-        String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + someParam + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred";
+    @GetMapping("/test") //Todo return Attorney object as class
+    public String getAttorney(@RequestParam(value = "Suchworte") String nameOfAttorney) throws IOException, ParserConfigurationException, SAXException {
+        String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + nameOfAttorney + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred";
         RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
-        List<String> strings = returnLink(response);
+        List<String> strings = returnXmlLinks(response);
         //String xmlString = restTemplate.getForObject(strings.get(0), String.class);
         //String some = xmlText(xmlString);
         List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
         //String s = xmlText(listOfXmls.get(31));
         List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
         List<Boolean> booleans = new ArrayList<>();
-        String name = someParam.replace("'", "");
+        String name = nameOfAttorney.replace("'", "");
         listOfSpruchs.forEach(justizResponse ->  booleans.add(isDefense(justizResponse, name)));
+        int wonCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> aBoolean).count();
+        int lostCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> !aBoolean).count();
         //return restTemplate.getForObject(strings.get(0), String.class);
-        return jsonConverter.toJson(listOfSpruchs);
+        List<String> linksToCases = returnLinksToCases(response);
+        return jsonConverter.toJson(new Attorney(nameOfAttorney, wonCases, lostCases, linksToCases));
         //return s;
     }
 
@@ -59,7 +64,7 @@ public class HackathonRestController {
         return response;
     }
 
-    private List<String> returnLink(String json) {
+    private List<String> returnXmlLinks(String json) {
         List<String> xmlLinks = new ArrayList<>();
         String amountJsonPath = "$['OgdSearchResult']['OgdDocumentResults']['Hits']['#text']";
         DocumentContext jsonContext = JsonPath.parse(json);
@@ -74,6 +79,26 @@ public class HackathonRestController {
             } catch (Exception e) {
                 String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
                 xmlLinks.add(jsonContext.read(jsonPath));
+            }
+        }
+        return xmlLinks;
+    }
+
+    private List<String> returnLinksToCases(String json) {
+        List<String> xmlLinks = new ArrayList<>();
+        String amountJsonPath = "$['OgdSearchResult']['OgdDocumentResults']['Hits']['#text']";
+        DocumentContext jsonContext = JsonPath.parse(json);
+        int amountOfResults = Integer.parseInt(jsonContext.read(amountJsonPath));
+        if (amountOfResults > resultsLimit) {
+            amountOfResults = resultsLimit;
+        }
+        for (int i = 0; i < amountOfResults; i++) {
+            try {
+                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Metadaten']['Allgemein']['DokumentUrl']";
+                xmlLinks.add(jsonContext.read(jsonPath));
+            } catch (Exception e) {
+                //String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
+                //xmlLinks.add(jsonContext.read(jsonPath));
             }
         }
         return xmlLinks;
