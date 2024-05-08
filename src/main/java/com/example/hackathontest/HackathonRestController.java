@@ -52,18 +52,6 @@ public class HackathonRestController {
         //return s;
     }
 
-    @GetMapping("/history")
-    public String getChanges(/*@RequestParam(value = "Applikation") String someParam*/) throws JsonProcessingException {
-        String url = "https://data.bka.gv.at/ris/api/v2.6/History?Anwendung=Vfgh&AendurungenVon=1970-01-01&AendurungenBis=2024-01-01";
-        RestTemplate restTemplate = new RestTemplate();
-        String response = restTemplate.getForObject(url, String.class);
-        String finalResponse = jsonConverter.toJson(response);
-        StringBuilder stringBuilder = new StringBuilder();
-
-        //return returnFormattedResponse(response);
-        return response;
-    }
-
     private List<String> returnXmlLinks(String json) {
         List<String> xmlLinks = new ArrayList<>();
         String amountJsonPath = "$['OgdSearchResult']['OgdDocumentResults']['Hits']['#text']";
