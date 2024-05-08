@@ -117,7 +117,7 @@ public class HackathonRestController {
             returnAttorney.setWonCases(wonCases);
             returnAttorney.setLostCases(lostCases);
 
-            // Debugging-Ausgabe
+            // Debugging-Ausgabe hier
             System.out.println("Kopf: " + returnKopf);
             System.out.println("Spruch: " + returnSpruch);
             System.out.println("Attorney: " + returnAttorney.getName() + ", Won Cases: " + returnAttorney.getWonCases() + ", Lost Cases: " + returnAttorney.getLostCases());
