@@ -1,20 +1,25 @@
 package com.example.hackathontest.data;
 
-import java.util.List;
-
 public class Attorney {
     private String name;
     private int wonCases;
     private int lostCases;
-    private List<String> cases;
 
-    public Attorney(String name, int wonCases, int lostCases, List<String> cases) {
+    // Standardkonstruktor für Fälle, in denen keine Daten beim Erstellen des Objekts verfügbar sind
+    public Attorney() {
+        this.name = "";
+        this.wonCases = 0;
+        this.lostCases = 0;
+    }
+
+    // Konstruktor für vollständige Initialisierung
+    public Attorney(String name, int wonCases, int lostCases) {
         this.name = name;
         this.wonCases = wonCases;
         this.lostCases = lostCases;
-        this.cases = cases;
     }
 
+    // Getter und Setter
     public String getName() {
         return name;
     }
@@ -37,13 +42,5 @@ public class Attorney {
 
     public void setLostCases(int lostCases) {
         this.lostCases = lostCases;
-    }
-
-    public List<String> getCases() {
-        return cases;
-    }
-
-    public void setCases(List<String> cases) {
-        this.cases = cases;
     }
 }
