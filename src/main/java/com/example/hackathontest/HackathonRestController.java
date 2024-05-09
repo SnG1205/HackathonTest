@@ -89,10 +89,19 @@ public class HackathonRestController {
                     absatzElements.add(element);
                 }
 
+                boolean isKlagendePartei = false;
+                boolean isRevisionEingebracht = false;
+
                 for (Element absatz : absatzElements) {
                     String ctValue = absatz.getAttributeValue("ct");
                     if ("kopf".equals(ctValue)) {
                         returnKopf = absatz.getText();
+                        if (returnKopf.contains("klagenden Partei")) {
+                            isKlagendePartei = true;
+                        }
+                        if (returnKopf.contains("Revision eingebracht") || returnKopf.contains("Revisionsrekurs eingebracht") || returnKopf.contains("Beschwerde eingebracht")) {
+                            isRevisionEingebracht = true;
+                        }
                         if (returnKopf.contains("vertreten durch")) {
                             String[] parts = returnKopf.split("vertreten durch");
                             if (parts.length > 1) {
@@ -104,18 +113,47 @@ public class HackathonRestController {
                         returnSpruch = absatz.getText();
                     }
 
-                    // Beispielhafte Logik, um die gewonnenen und verlorenen Fälle zu zählen
-                    if (absatz.getText().contains("stattgegeben") || absatz.getText().contains("zulässig")) {
-                        wonCases++;
-                    } else if (absatz.getText().contains("unzulässig") || absatz.getText().contains("zurückgewiesen") ||
-                            absatz.getText().contains("Revisionsrekurs ist nicht zulässig") || absatz.getText().contains("abgewiesen") || absatz.getText().contains("nicht Folge gegeben.")) {
-                        lostCases++;
+                    // Win/Loss Logic
+                    boolean isWon = false;
+                    boolean isLost = false;
+
+                    if (isKlagendePartei && isRevisionEingebracht) {
+                        if (absatz.getText().contains("stattgegeben") || absatz.getText().contains("Folge gegeben")) {
+                            isWon = true;
+                        } else if (absatz.getText().contains("nicht stattgegeben") || absatz.getText().contains("zurückgewiesen") ||
+                                absatz.getText().contains("abgewiesen") || absatz.getText().contains("verworfen")) {
+                            isLost = true;
+                        }
+                    } else if (isKlagendePartei && !isRevisionEingebracht) {
+                        if (absatz.getText().contains("nicht stattgegeben") || absatz.getText().contains("zurückgewiesen") ||
+                                absatz.getText().contains("abgewiesen") || absatz.getText().contains("verworfen")) {
+                            isWon = true;
+                        } else if (absatz.getText().contains("stattgegeben") || absatz.getText().contains("Folge gegeben")) {
+                            isLost = true;
+                        }
+                    } else if (!isKlagendePartei && isRevisionEingebracht) {
+                        if (absatz.getText().contains("stattgegeben") || absatz.getText().contains("Folge gegeben")) {
+                            isWon = true;
+                        } else if (absatz.getText().contains("nicht stattgegeben") || absatz.getText().contains("zurückgewiesen") ||
+                                absatz.getText().contains("abgewiesen") || absatz.getText().contains("verworfen")) {
+                            isLost = true;
+                        }
+                    } else if (!isKlagendePartei && !isRevisionEingebracht) {
+                        if (absatz.getText().contains("nicht stattgegeben") || absatz.getText().contains("zurückgewiesen") ||
+                                absatz.getText().contains("abgewiesen") || absatz.getText().contains("verworfen")) {
+                            isWon = true;
+                        } else if (absatz.getText().contains("stattgegeben") || absatz.getText().contains("Folge gegeben")) {
+                            isLost = true;
+                        }
+                    }
+
+                    if (isWon) {
+                        returnAttorney.setWonCases(returnAttorney.getWonCases() + 1);
+                    } else if (isLost) {
+                        returnAttorney.setLostCases(returnAttorney.getLostCases() + 1);
                     }
                 }
             }
-
-            returnAttorney.setWonCases(wonCases);
-            returnAttorney.setLostCases(lostCases);
 
             // Debugging-Ausgabe hier
             System.out.println("Kopf: " + returnKopf);
@@ -128,10 +166,6 @@ public class HackathonRestController {
             return new JustizResponse("", "", new Attorney());
         }
     }
-
-
-
-
 
     @Bean
     public CorsFilter corsFilter() {
