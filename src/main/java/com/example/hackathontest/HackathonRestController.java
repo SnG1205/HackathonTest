@@ -241,4 +241,6 @@ public class HackathonRestController {
 
         return new Attorney(name, wonCases, lostCases, linksToCases);
     }
+
+
 }
