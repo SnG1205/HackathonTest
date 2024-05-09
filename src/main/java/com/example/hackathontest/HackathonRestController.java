@@ -41,14 +41,9 @@ public class HackathonRestController {
         List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
         //String s = xmlText(listOfXmls.get(31));
         List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
-        List<Boolean> booleans = new ArrayList<>();
-        String name = nameOfAttorney.replace("'", "");
-        listOfSpruchs.forEach(justizResponse ->  booleans.add(isDefense(justizResponse, name)));
-        int wonCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> aBoolean).count();
-        int lostCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> !aBoolean).count();
         //return restTemplate.getForObject(strings.get(0), String.class);
-        List<String> linksToCases = returnLinksToCases(response);
-        return jsonConverter.toJson(new Attorney(nameOfAttorney, wonCases, lostCases, linksToCases));
+        return jsonConverter.toJson(createAttorney(listOfSpruchs, nameOfAttorney, response));
+        //return jsonConverter.toJson(listOfSpruchs);
         //return s;
     }
 
@@ -60,13 +55,23 @@ public class HackathonRestController {
         if (amountOfResults > resultsLimit) {
             amountOfResults = resultsLimit;
         }
-        for (int i = 0; i < amountOfResults; i++) {
+        if (amountOfResults == 1) {
             try {
-                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference'][0]['Urls']['ContentUrl'][0]['Url']";
+                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference']['Data']['Dokumentliste']['ContentReference'][0]['Urls']['ContentUrl'][0]['Url']";
                 xmlLinks.add(jsonContext.read(jsonPath));
             } catch (Exception e) {
-                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
+                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference']['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
                 xmlLinks.add(jsonContext.read(jsonPath));
+            }
+        } else {
+            for (int i = 0; i < amountOfResults; i++) {
+                try {
+                    String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference'][0]['Urls']['ContentUrl'][0]['Url']";
+                    xmlLinks.add(jsonContext.read(jsonPath));
+                } catch (Exception e) {
+                    String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
+                    xmlLinks.add(jsonContext.read(jsonPath));
+                }
             }
         }
         return xmlLinks;
@@ -80,15 +85,26 @@ public class HackathonRestController {
         if (amountOfResults > resultsLimit) {
             amountOfResults = resultsLimit;
         }
-        for (int i = 0; i < amountOfResults; i++) {
+        if (amountOfResults == 1) {
             try {
-                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Metadaten']['Allgemein']['DokumentUrl']";
+                String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference']['Data']['Metadaten']['Allgemein']['DokumentUrl']";
                 xmlLinks.add(jsonContext.read(jsonPath));
             } catch (Exception e) {
                 //String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
                 //xmlLinks.add(jsonContext.read(jsonPath));
             }
+        } else {
+            for (int i = 0; i < amountOfResults; i++) {
+                try {
+                    String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Metadaten']['Allgemein']['DokumentUrl']";
+                    xmlLinks.add(jsonContext.read(jsonPath));
+                } catch (Exception e) {
+                    //String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
+                    //xmlLinks.add(jsonContext.read(jsonPath));
+                }
+            }
         }
+
         return xmlLinks;
     }
 
@@ -180,15 +196,14 @@ public class HackathonRestController {
 
         for (String s1 : listOfAttack) {
             if (kopf.contains(s1)) {
-                for(String s2 : listOfDefense){
-                    if (kopf.contains(s2)){
+                for (String s2 : listOfDefense) {
+                    if (kopf.contains(s2)) {
                         int indexOfAttack = kopf.indexOf(s1);
                         int indexOfName = kopf.indexOf(name);
                         int indexOfDefense = kopf.indexOf(s2);
-                        if(indexOfAttack < indexOfDefense){
+                        if (indexOfAttack < indexOfDefense) {
                             return indexOfName >= indexOfDefense;
-                        }
-                        else{
+                        } else {
                             return indexOfName <= indexOfAttack;
                         }
                         /*if (indexOfName - indexOfAttack < 70) {
@@ -214,5 +229,16 @@ public class HackathonRestController {
         } else {
             return spruch.getText();
         }
+    }
+
+    private Attorney createAttorney(List<JustizResponse> justizResponses, String nameOfAttorney, String response) {
+        List<Boolean> booleans = new ArrayList<>();
+        String name = nameOfAttorney.replace("'", "");
+        justizResponses.forEach(justizResponse -> booleans.add(isDefense(justizResponse, name)));
+        int wonCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> aBoolean).count();
+        int lostCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> !aBoolean).count();
+        List<String> linksToCases = returnLinksToCases(response);
+
+        return new Attorney(name, wonCases, lostCases, linksToCases);
     }
 }
