@@ -2,6 +2,7 @@ package com.example.hackathontest;
 
 import com.example.hackathontest.data.Attorney;
 import com.example.hackathontest.data.JustizResponse;
+import com.example.hackathontest.utils.DatabaseConnector;
 import com.example.hackathontest.utils.JsonConverter;
 import com.example.hackathontest.utils.XmlParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,25 +27,37 @@ import java.util.Objects;
 @RestController
 public class HackathonRestController {
     private final JsonConverter jsonConverter = new JsonConverter();
+    private final DatabaseConnector databaseConnector = new DatabaseConnector();
 
     @Value("${results.limit}")
     private int resultsLimit;
 
     @GetMapping("/test") //Todo return Attorney object as class
     public String getAttorney(@RequestParam(value = "Suchworte") String nameOfAttorney) throws IOException, ParserConfigurationException, SAXException {
-        String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + nameOfAttorney + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred";
-        RestTemplate restTemplate = new RestTemplate();
-        String response = restTemplate.getForObject(url, String.class);
-        List<String> strings = returnXmlLinks(response);
-        //String xmlString = restTemplate.getForObject(strings.get(0), String.class);
-        //String some = xmlText(xmlString);
-        List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
-        //String s = xmlText(listOfXmls.get(31));
-        List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
-        //return restTemplate.getForObject(strings.get(0), String.class);
-        return jsonConverter.toJson(createAttorney(listOfSpruchs, nameOfAttorney, response));
-        //return jsonConverter.toJson(listOfSpruchs);
-        //return s;
+        try{
+            Attorney attorney = databaseConnector.getAttorney(nameOfAttorney.replace("'",""));
+            if(attorney == null){
+                String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + nameOfAttorney + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred";
+                RestTemplate restTemplate = new RestTemplate();
+                String response = restTemplate.getForObject(url, String.class);
+                List<String> strings = returnXmlLinks(response);
+                //String xmlString = restTemplate.getForObject(strings.get(0), String.class);
+                //String some = xmlText(xmlString);
+                List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
+                //String s = xmlText(listOfXmls.get(31));
+                List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
+                //return restTemplate.getForObject(strings.get(0), String.class);
+                attorney = createAttorney(listOfSpruchs, nameOfAttorney, response);
+                databaseConnector.addAttorney(attorney);
+                //return jsonConverter.toJson(listOfSpruchs);
+                //return s;
+            }
+            return jsonConverter.toJson(attorney);
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return "Something went wrong on the server side. We apologize for this issue.";
+        }
     }
 
     private List<String> returnXmlLinks(String json) {
@@ -241,6 +254,4 @@ public class HackathonRestController {
 
         return new Attorney(name, wonCases, lostCases, linksToCases);
     }
-
-
 }

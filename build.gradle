@@ -20,6 +20,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'com.jayway.jsonpath:json-path:2.9.0'  // Aktualisierter Eintrag
     implementation 'org.jdom:jdom2:2.0.6.1'  // Aktualisierter Eintrag
+    implementation group: 'com.mysql', name: 'mysql-connector-j', version: '8.4.0'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
