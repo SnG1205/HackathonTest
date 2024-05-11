@@ -5,7 +5,6 @@ import com.example.hackathontest.data.JustizResponse;
 import com.example.hackathontest.utils.DatabaseConnector;
 import com.example.hackathontest.utils.JsonConverter;
 import com.example.hackathontest.utils.XmlParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.jdom2.Content;
@@ -34,15 +33,14 @@ public class HackathonRestController {
 
     @GetMapping("/test") //Todo return Attorney object as class
     public String getAttorney(@RequestParam(value = "Suchworte") String nameOfAttorney) throws IOException, ParserConfigurationException, SAXException {
-        try{
-            Attorney attorney = databaseConnector.getAttorney(nameOfAttorney.replace("'",""));
-            if(attorney == null){
-                String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + nameOfAttorney + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred";
-                RestTemplate restTemplate = new RestTemplate();
-                String response = restTemplate.getForObject(url, String.class);
+        try {
+            Attorney attorney = databaseConnector.getAttorney(nameOfAttorney.replace("'", ""));
+            if (attorney == null) {
+                String response = fetchRis(nameOfAttorney, 1);
                 List<String> strings = returnXmlLinks(response);
                 //String xmlString = restTemplate.getForObject(strings.get(0), String.class);
                 //String some = xmlText(xmlString);
+                RestTemplate restTemplate = new RestTemplate();
                 List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
                 //String s = xmlText(listOfXmls.get(31));
                 List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
@@ -53,8 +51,7 @@ public class HackathonRestController {
                 //return s;
             }
             return jsonConverter.toJson(attorney);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
             return "Something went wrong on the server side. We apologize for this issue.";
         }
@@ -231,6 +228,41 @@ public class HackathonRestController {
         return null;
     }
 
+    private Boolean isWon(JustizResponse justizResponse, boolean isDefense) {
+        List<String> listOfWins = new ArrayList<>(List.of(
+                "stattgegeben",
+                "wird Folge gegeben"
+        ));
+        List<String> listOfLosses = new ArrayList<>(List.of(
+                "wird nicht Folge gegeben",
+                "zurückgewiesen ",
+                "abgewiesen"
+        ));
+        List<String> listOfNeutrals = new ArrayList<>(List.of(
+                "eingestellt",
+                "aufgehoben"
+        ));
+
+        String spruch = justizResponse.getSpruch();
+
+        for (String s1 : listOfNeutrals) {
+            if (spruch.contains(s1)) {
+                return null; //Decision was cancelled, so state of case is undefined.
+            }
+        }
+        for (String s2 : listOfWins) {
+            if (spruch.contains(s2)) {
+                return !isDefense; //Case won by attacking side, so if lawyer was on defensive side, he lost.
+            }
+        }
+        for (String s3 : listOfLosses) {
+            if (spruch.contains(s3)) {
+                return isDefense; //Case lost by attacking side, so if lawyer was on defensive side, he won.
+            }
+        }
+        return null; //If for some reason above-written for-loops don`t work, return null
+    }
+
     private String getSpruch(Element spruch) {
         if (spruch.getText().isEmpty()) {
             /*List<Content> contentList = spruch.getContent().stream().filter(content -> content.getCType().equals(Content.CType.Element)).toList();
@@ -247,11 +279,24 @@ public class HackathonRestController {
     private Attorney createAttorney(List<JustizResponse> justizResponses, String nameOfAttorney, String response) {
         List<Boolean> booleans = new ArrayList<>();
         String name = nameOfAttorney.replace("'", "");
-        justizResponses.forEach(justizResponse -> booleans.add(isDefense(justizResponse, name)));
+        justizResponses.forEach(justizResponse -> {
+            try {
+                boolean isDefense = isDefense(justizResponse, name);
+                booleans.add(isWon(justizResponse, isDefense));
+            }
+            catch (Exception ignored){
+            }
+        });
         int wonCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> aBoolean).count();
         int lostCases = (int) booleans.stream().filter(Objects::nonNull).filter(aBoolean -> !aBoolean).count();
         List<String> linksToCases = returnLinksToCases(response);
 
         return new Attorney(name, wonCases, lostCases, linksToCases);
+    }
+
+    private String fetchRis(String nameOfAttorney, int pageNumber){
+        String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + nameOfAttorney + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred&Seitennummer=" + pageNumber;
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(url, String.class);
     }
 }
