@@ -27,6 +27,7 @@ import java.util.Objects;
 public class HackathonRestController {
     private final JsonConverter jsonConverter = new JsonConverter();
     private final DatabaseConnector databaseConnector = new DatabaseConnector();
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${results.limit}")
     private int resultsLimit;
@@ -40,7 +41,6 @@ public class HackathonRestController {
                 List<String> strings = returnXmlLinks(response);
                 //String xmlString = restTemplate.getForObject(strings.get(0), String.class);
                 //String some = xmlText(xmlString);
-                RestTemplate restTemplate = new RestTemplate();
                 List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
                 //String s = xmlText(listOfXmls.get(31));
                 List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
@@ -296,7 +296,6 @@ public class HackathonRestController {
 
     private String fetchRis(String nameOfAttorney, int pageNumber){
         String url = "https://data.bka.gv.at/ris/api/v2.6/Judikatur?Applikation=Justiz&Suchworte=" + nameOfAttorney + "&Dokumenttyp.SucheInEntscheidungstexten=true&Sortierung.SortDirection=Descending&Sortierung.SortedByColumn=Datum&DokumenteProSeite=OneHundred&Seitennummer=" + pageNumber;
-        RestTemplate restTemplate = new RestTemplate();
         return restTemplate.getForObject(url, String.class);
     }
 }
