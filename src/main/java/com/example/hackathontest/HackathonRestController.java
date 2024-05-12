@@ -24,6 +24,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -52,6 +53,9 @@ public class HackathonRestController {
                 List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
                 //return restTemplate.getForObject(strings.get(0), String.class);
                 attorney = createAttorney(listOfSpruchs, nameOfAttorney, response);
+                if(attorney.getCases().isEmpty()){ //Means that no lawyer with given name actually exists
+                    throw new Exception();
+                }
                 databaseConnector.addAttorney(attorney);
                 //return jsonConverter.toJson(listOfSpruchs);
                 //return s;
