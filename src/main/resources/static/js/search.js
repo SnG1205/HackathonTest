@@ -2,7 +2,7 @@ document.getElementById('lawyerSearchForm').addEventListener('submit', function(
     e.preventDefault();
     const query = document.getElementById('query').value;
 
-    fetch(`/test?Suchworte=${query}`)
+    fetch(`/test?Suchworte='${query}'`)
         .then(response => response.json())
         .then(data => {
             const resultsDiv = document.getElementById('results');
