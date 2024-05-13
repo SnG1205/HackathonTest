@@ -9,8 +9,8 @@ document.getElementById('lawyerSearchForm').addEventListener('submit', function 
             resultsDiv.innerHTML = '';
 
             const lawyerName = data.name || 'N/A';
-            const wonCases = data.wonCases//data.reduce((acc, curr) => acc + curr.wonCases, 0);
-            const lostCases = data.lostCases//data.reduce((acc, curr) => acc + curr.lostCases, 0);
+            const wonCases = data.wonCases
+            const lostCases = data.lostCases
 
             const summary = document.createElement('div');
             summary.innerHTML = `<h3>Lawyer: ${lawyerName}</h3><p>Wins: ${wonCases}, Losses: ${lostCases}</p>`;
