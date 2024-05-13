@@ -1,7 +1,6 @@
 package com.example.hackathontest.utils;
 
 import com.example.hackathontest.data.Attorney;
-import org.springframework.context.annotation.Bean;
 
 import java.sql.*;
 import java.util.ArrayList;

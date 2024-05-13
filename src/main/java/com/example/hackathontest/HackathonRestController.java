@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,19 +45,13 @@ public class HackathonRestController {
             if (attorney == null) {
                 String response = fetchRis(nameOfAttorney, 1);
                 List<String> strings = returnXmlLinks(response);
-                //String xmlString = restTemplate.getForObject(strings.get(0), String.class);
-                //String some = xmlText(xmlString);
                 List<String> listOfXmls = strings.stream().map(s -> restTemplate.getForObject(s, String.class)).toList();
-                //String s = xmlText(listOfXmls.get(31));
                 List<JustizResponse> listOfSpruchs = listOfXmls.stream().map(this::xmlText).toList();
-                //return restTemplate.getForObject(strings.get(0), String.class);
                 attorney = createAttorney(listOfSpruchs, nameOfAttorney, response);
                 if(attorney.getCases().isEmpty()){ //Means that no lawyer with given name actually exists
                     throw new Exception();
                 }
                 databaseConnector.addAttorney(attorney);
-                //return jsonConverter.toJson(listOfSpruchs);
-                //return s;
             }
             return jsonConverter.toJson(attorney);
         } catch (Exception e) {
@@ -109,18 +102,14 @@ public class HackathonRestController {
             try {
                 String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference']['Data']['Metadaten']['Allgemein']['DokumentUrl']";
                 xmlLinks.add(jsonContext.read(jsonPath));
-            } catch (Exception e) {
-                //String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
-                //xmlLinks.add(jsonContext.read(jsonPath));
+            } catch (Exception ignored) {
             }
         } else {
             for (int i = 0; i < amountOfResults; i++) {
                 try {
                     String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Metadaten']['Allgemein']['DokumentUrl']";
                     xmlLinks.add(jsonContext.read(jsonPath));
-                } catch (Exception e) {
-                    //String jsonPath = "$['OgdSearchResult']['OgdDocumentResults']['OgdDocumentReference'][" + i + "]['Data']['Dokumentliste']['ContentReference']['Urls']['ContentUrl'][0]['Url']";
-                    //xmlLinks.add(jsonContext.read(jsonPath));
+                } catch (Exception ignored) {
                 }
             }
         }
@@ -141,8 +130,6 @@ public class HackathonRestController {
             List<Element> listOfContents = contentAbschnittStream.getContent().stream().map(content -> (Element) content).toList();
             Element kopf = listOfContents.stream().filter(element -> element.getAttribute("ct") != null
                             && element.getAttribute("ct").getValue().equals("kopf")
-                    /*&& element.getAttribute("ct") != null
-                    && element.getAttribute("typ").getValue().equals("erltext")*/
             ).toList().get(0);
             List<Element> listOfSpruchs = listOfContents.stream().filter(element -> element.getAttribute("ct") != null
                     && element.getAttribute("ct").getValue().equals("spruch")
@@ -151,38 +138,20 @@ public class HackathonRestController {
             StringBuilder stringBuilder1 = new StringBuilder();
             listOfSpruchs.forEach(element -> stringBuilder1.append(getSpruch(element)));
             returnSpruch = stringBuilder1.toString();
-            /*Element spruch = listOfContents.stream().filter(element -> element.getAttribute("ct") != null
-                    && element.getAttribute("ct").getValue().equals("spruch")
-                    && element.getAttribute("typ") != null
-            ).toList().get(0);*/ //Todo change since method now returns only part of the Spruch. Cases where the case "aufgehoben worden ist" are not working properly.
             if (kopf.getText().isEmpty()) {
                 Element inner = (Element) kopf.getContent(0);
                 System.out.println(inner.getText());
-                //return inner.getText();
                 returnKopf = inner.getText();
             } else if (!kopf.getText().isEmpty()) {
                 List<Element> innerContents = kopf.getContent().stream().filter(content -> content.getCType().equals(Content.CType.Element)).map(content -> (Element) content).toList();
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(kopf.getText());
                 innerContents.forEach(element -> stringBuilder.append(element.getText()));
-                //return stringBuilder.toString();
                 returnKopf = stringBuilder.toString();
-                //Todo investigate case 29 since it has no "Kopf" and returns undesired String
             }
-            /*if(spruch.getText().isEmpty()){
-                String output = spruch.getContent(0).getValue();
-                System.out.println(output);
-                //return output;
-                returnSpruch = output;
-            }
-            else{
-                returnSpruch = spruch.getText();
-            }*/
-            //return xml;
             return new JustizResponse(returnKopf, returnSpruch);
         } catch (Exception e) {
             System.out.println("Error");
-            //return xml;
             return new JustizResponse("", "");
         }
     }
@@ -226,11 +195,6 @@ public class HackathonRestController {
                         } else {
                             return indexOfName <= indexOfAttack;
                         }
-                        /*if (indexOfName - indexOfAttack < 70) {
-                            return false;
-                        } else {
-                            return true;
-                        }*/
                     }
                 }
             }
@@ -275,9 +239,6 @@ public class HackathonRestController {
 
     private String getSpruch(Element spruch) {
         if (spruch.getText().isEmpty()) {
-            /*List<Content> contentList = spruch.getContent().stream().filter(content -> content.getCType().equals(Content.CType.Element)).toList();
-            StringBuilder s = new StringBuilder();
-            contentList.forEach(content -> s.append(content.getValue()));*/
             String output = spruch.getContent(0).getValue();
             System.out.println(output);
             return output;
