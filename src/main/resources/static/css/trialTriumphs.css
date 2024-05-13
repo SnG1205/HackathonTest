@@ -1,0 +1,156 @@
+/* General body styles */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+html, body {
+    height: 100%; /* Stellt sicher, dass der HTML- und Body-Tag den gesamten Viewport einnehmen */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    font-family: 'Merriweather', serif;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+main {
+    flex: 1 0 auto; /* Flexbox: Ermöglicht, dass dieser Bereich flexibel wächst und schrumpft */
+    overflow-y: auto; /* Ermöglicht das Scrollen innerhalb des Hauptbereichs */
+}
+
+.header {
+    background-color: #fff; /* Setze die Hintergrundfarbe auf Weiß */
+    text-align: center;
+    padding: 20px 0;
+}
+
+.header img {
+    width: 150px;
+    height: auto;
+    /* Stelle sicher, dass das Bild keine zusätzlichen Ränder hat */
+    display: block; /* Dies entfernt unerwünschten Raum um das Bild */
+    margin: 0 auto; /* Zentriert das Bild horizontal */
+}
+
+
+
+.header h1 {
+    margin: 0;
+    padding-top: 10px; /* align with logo */
+    font-size: 24px;
+}
+
+/* Section styling */
+section {
+    display: none; /* Start mit versteckten Sektionen */
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+}
+
+
+
+
+nav {
+    background-color: navy;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 15px;
+    transition: background-color 0.3s;
+}
+
+nav ul li a:hover {
+    background-color: #0056b3;
+}
+
+
+/* Footer styling */
+.footer {
+    text-align: center;
+    padding: 20px 10px;
+    background-color: navy;
+    color: #fff;
+}
+
+footer {
+    flex-shrink: 0; /* Verhindert, dass der Footer schrumpft */
+    width: 100%; /* Stellt die volle Breite sicher */
+}
+
+/* Search form styling */
+#form {
+    margin-top: 20px;
+}
+
+input[type="search"], .search-button {
+    padding: 10px;
+    margin-right: 10px;
+}
+
+.search-button {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+#lawyerSearchForm {
+    margin-top: 30px; /* Adjust this value as needed */
+}
+
+
+.search-button:hover {
+    background-color: darkslateblue;
+}
+
+
+#results {
+    margin-top: 20px; /* Abstand nach dem Suchfeld */
+    width: 100%; /* Breite des Containers */
+    text-align: center; /* Zentriert den Text innerhalb des Containers */
+    padding: 10px; /* Padding für Innenabstand */
+    box-sizing: border-box; /* Stellt sicher, dass Padding und Border die Breite nicht verändern */
+    background: white; /* Optional: Hintergrundfarbe setzen */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: Schatten für bessere Sichtbarkeit */
+    max-height: 300px; /* Setze eine maximale Höhe */
+    overflow-y: auto; /* Ermögliche vertikales Scrollen, wenn der Inhalt die maximale Höhe überschreitet */
+}
+
+
+.result-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-name {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.result-detail {
+    font-size: 16px;
+    color: #666;
+}
