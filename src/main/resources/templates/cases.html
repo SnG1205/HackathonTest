@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lawyer Cases</title>
+    <link rel="stylesheet" href="/css/trialTriumphs.css">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <div class="header">
+        <img src="/logo.png" alt="logo" class="logo" />
+        <h1>Lawyer Cases</h1>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="/" onclick="showSection('home'); return false;">Home</a></li>
+            <li><a href="/" onclick="showSection('about'); return false;">About</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <section id="cases">
+        <div class="container">
+            <h2>Cases for <span id="lawyerName"></span></h2>
+            <ul id="caseList"></ul>
+        </div>
+    </section>
+</main>
+<footer>
+    <p>Copyright © 2024 by Trial-Triumphs.com</p>
+</footer>
+<script src="/js/navigation.js"></script>
+<script src="/js/cases.js"></script>
+</body>
+</html>

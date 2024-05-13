@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trial Triumphs</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="stylesheet" href="/css/trialTriumphs.css">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <div class="header">
+        <img src="/logo.png" alt="logo" class="logo" />
+        <h1>Trial Triumphs</h1>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="#" onclick="showSection('home'); return false;">Home</a></li>
+            <li><a href="#" onclick="showSection('about'); return false;">About</a></li>
+        </ul>
+    </nav>
+</header>
+
+<section id="home">
+    <p id="welcomeText">Welcome to Trial Triumphs</p>
+    <form id="lawyerSearchForm">
+        <label for="query">Lawyer Name</label>
+        <input type="search" id="query" name="q" placeholder="Search...">
+        <button type="submit" class="search-button">Search</button>
+    </form>
+    <div id="results"></div>
+</section>
+
+<section id="about" style="display:none;">
+    <div class="slideshow-container">
+        <div class="slideshow-text">This page aims to compare lawyers in the Austrian legal system based on their wins and losses, providing insights into their effectiveness and success rates in legal proceedings.</div>
+        <div class="slideshow-text">By analyzing the outcomes of cases they have handled, one can evaluate their expertise, strategies, and track record.</div>
+        <div class="slideshow-text">Such a comparison could highlight trends among different lawyers or law firms, identifying those with a higher success rate or specialization in specific areas of law.</div>
+        <div class="slideshow-text">Additionally, it could help clients make informed decisions when selecting legal representation, considering factors such as experience, reputation, and likelihood of achieving favorable outcomes.</div>
+    </div>
+</section>
+
+<footer>
+    <p>Copyright © 2024 by Trial-Triumphs.com</p>
+</footer>
+<script src="/js/navigation.js"></script>
+<script src="/js/search.js"></script>
+</body>
+</html>

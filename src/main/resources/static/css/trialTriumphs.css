@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 html, body {
-    height: 100%; /* Stellt sicher, dass der HTML- und Body-Tag den gesamten Viewport einnehmen */
+    height: 100%;
     margin: 0;
     padding: 0;
     display: flex;
@@ -16,12 +16,12 @@ body {
 }
 
 main {
-    flex: 1 0 auto; /* Flexbox: Ermöglicht, dass dieser Bereich flexibel wächst und schrumpft */
-    overflow-y: auto; /* Ermöglicht das Scrollen innerhalb des Hauptbereichs */
+    flex: 1 0 auto;
+    overflow-y: auto;
 }
 
 .header {
-    background-color: #fff; /* Setze die Hintergrundfarbe auf Weiß */
+    background-color: #fff;
     text-align: center;
     padding: 20px 0;
 }
@@ -29,28 +29,15 @@ main {
 .header img {
     width: 150px;
     height: auto;
-    /* Stelle sicher, dass das Bild keine zusätzlichen Ränder hat */
-    display: block; /* Dies entfernt unerwünschten Raum um das Bild */
-    margin: 0 auto; /* Zentriert das Bild horizontal */
+    display: block;
+    margin: 0 auto;
 }
-
-
 
 .header h1 {
     margin: 0;
-    padding-top: 10px; /* align with logo */
+    padding-top: 10px;
     font-size: 24px;
 }
-
-/* Section styling */
-section {
-    display: none; /* Start mit versteckten Sektionen */
-    opacity: 0;
-    transition: opacity 2s ease-in-out;
-}
-
-
-
 
 nav {
     background-color: navy;
@@ -81,8 +68,6 @@ nav ul li a:hover {
     background-color: #0056b3;
 }
 
-
-/* Footer styling */
 .footer {
     text-align: center;
     padding: 20px 10px;
@@ -91,11 +76,10 @@ nav ul li a:hover {
 }
 
 footer {
-    flex-shrink: 0; /* Verhindert, dass der Footer schrumpft */
-    width: 100%; /* Stellt die volle Breite sicher */
+    flex-shrink: 0;
+    width: 100%;
 }
 
-/* Search form styling */
 #form {
     margin-top: 20px;
 }
@@ -113,28 +97,50 @@ input[type="search"], .search-button {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+
 #lawyerSearchForm {
-    margin-top: 30px; /* Adjust this value as needed */
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 400px;
+    margin: 30px auto;
 }
 
+#lawyerSearchForm label {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+input[type="search"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 10px;
+}
 
 .search-button:hover {
     background-color: darkslateblue;
 }
 
-
 #results {
-    margin-top: 20px; /* Abstand nach dem Suchfeld */
-    width: 100%; /* Breite des Containers */
-    text-align: center; /* Zentriert den Text innerhalb des Containers */
-    padding: 10px; /* Padding für Innenabstand */
-    box-sizing: border-box; /* Stellt sicher, dass Padding und Border die Breite nicht verändern */
-    background: white; /* Optional: Hintergrundfarbe setzen */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: Schatten für bessere Sichtbarkeit */
-    max-height: 300px; /* Setze eine maximale Höhe */
-    overflow-y: auto; /* Ermögliche vertikales Scrollen, wenn der Inhalt die maximale Höhe überschreitet */
+    margin-top: 20px;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    max-height: 300px;
+    overflow-y: auto;
 }
-
 
 .result-item {
     padding: 10px;
@@ -153,4 +159,43 @@ input[type="search"], .search-button {
 .result-detail {
     font-size: 16px;
     color: #666;
+}
+
+.slideshow-container {
+    position: relative;
+    max-width: 100%;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.slideshow-text {
+    display: none;
+    font-size: 18px;
+    line-height: 1.5;
+    margin-bottom: 15px; /* Add space between the texts */
+}
+
+.slideshow-text.active {
+    display: block;
+    animation: fade 2s;
+}
+
+@keyframes fade {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+/* Style for the welcome text */
+#welcomeText {
+    font-size: 32px;
+    font-weight: bold;
+    color: navy;
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 30px;
 }

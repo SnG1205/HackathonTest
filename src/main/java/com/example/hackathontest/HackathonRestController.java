@@ -12,6 +12,8 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,13 +26,12 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @CrossOrigin(origins = "http://localhost:8080")
-@RestController
+@Controller
 public class HackathonRestController {
     private final JsonConverter jsonConverter = new JsonConverter();
     private final DatabaseConnector databaseConnector = new DatabaseConnector();
@@ -40,7 +41,7 @@ public class HackathonRestController {
     private int resultsLimit;
 
     @GetMapping("/test") //Todo return Attorney object as class
-    public String getAttorney(@RequestParam(value = "Suchworte") String nameOfAttorney) throws IOException, ParserConfigurationException, SAXException {
+    public String getAttorney(@RequestParam(value = "Suchworte") String nameOfAttorney, Model model) throws IOException, ParserConfigurationException, SAXException {
         try {
             Attorney attorney = databaseConnector.getAttorney(nameOfAttorney.replace("'", ""));
             if (attorney == null) {
@@ -60,11 +61,21 @@ public class HackathonRestController {
                 //return jsonConverter.toJson(listOfSpruchs);
                 //return s;
             }
-            return jsonConverter.toJson(attorney);
+            model.addAttribute("attorney", jsonConverter.toJson(attorney));
+            return "results";
         } catch (Exception e) {
             System.out.println(e);
-            return "Something went wrong on the server side. We apologize for this issue.";
+            model.addAttribute("error", "Something went wrong on the server side. We apologize for this issue.");
+            return "results";
         }
+    }
+
+    @GetMapping("/cases")
+    public String getCaseLinks(@RequestParam(value = "name") String attorneyName, Model model) {
+        List<String> caseLinks = databaseConnector.getCaseLinksByAttorney(attorneyName);
+        model.addAttribute("caseLinks", caseLinks);
+        model.addAttribute("lawyerName", attorneyName);
+        return "cases";
     }
 
     private List<String> returnXmlLinks(String json) {
